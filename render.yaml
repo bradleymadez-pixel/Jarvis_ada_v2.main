@@ -1,0 +1,53 @@
+# Render blueprint for JARVIS.
+#
+# How to use:
+# 1. Push this project to a GitHub repo (Render deploys from GitHub).
+# 2. In the Render dashboard: New > Blueprint > pick your repo. Render reads
+#    this file automatically and sets everything up.
+# 3. Render will ask you to fill in the values marked "sync: false" below -
+#    that's every real secret (API keys, passwords). Nothing sensitive lives
+#    in this file itself, so it's safe to commit to GitHub.
+# 4. First deploy will take a while (~5-10 min) - it's building a Docker
+#    image with Python, Node, and all dependencies from scratch.
+#
+# After deploying, Render gives you a URL like https://jarvis-xxxx.onrender.com
+# That's the one URL for everything - frontend and backend both, from the
+# same container (see Dockerfile).
+
+services:
+  - type: web
+    name: jarvis
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /status
+    envVars:
+      # Cloud server, no local mic/camera/speakers - required.
+      - key: HOSTED_MODE
+        value: "true"
+
+      # Your Gemini API key. Get one at https://aistudio.google.com/app/apikey
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # A password of your choosing, to log into your own Jarvis from any
+      # browser. Required once this is on the public internet.
+      - key: AUTH_PASSWORD
+        sync: false
+
+      # Optional: lets Jarvis play music by name on Spotify.
+      # See backend/spotify_agent.py for setup instructions.
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: SPOTIFY_REDIRECT_URI
+        value: "http://127.0.0.1:8888/callback"
+
+      # Optional but recommended: persistent, cross-device memory.
+      # See backend/memory_store.py for setup instructions (Supabase).
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
